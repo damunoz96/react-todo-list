@@ -1,8 +1,9 @@
-import { useState } from 'react'
+/* eslint-disable react/prop-types */
+import { useEffect, useState } from 'react'
 import './App.css'
 import { supabase } from './supabase/client'
-import { createContext } from 'react'
 
+//TODO LIST
 function TodoCounter({ completed,total }) {
   return (
     <div>Have completed {completed} of {total} TODOs</div>
@@ -15,21 +16,53 @@ function TodoSearch(){
   )
 }
 
-// function TodoList() {
-//   async function todos() {
-//     const { data, error } = await supabase
-//     .from('todos')
-//     .select('name','done')
-//   }
-  
+function TodoList() { 
+  const events = supabase
+    .channel("custom-all-channel")
+    .on("postgres_changes", { event: "*", schema: "public", table: "todos" })
+    .subscribe();
 
-// }
+  useEffect(() => {
+    async function getTodos() {
+      let { data, error } = await supabase.from("todos").select("*");
+      setTodos(data);
+    }
+    getTodos();
+  }, [events]);
+
+  
+  const [todos, setTodos] = useState([]);
+      
+  return(
+    <>
+      <ul>
+        {
+          todos.map(todo=>{
+            return(
+              <li className={"flex"} key={todo.id}>
+                <span>Edit</span>
+                <p>{todo.date}</p>
+                <p>{todo.name}</p>
+                <span>Check</span>
+                <span>Delete</span>
+              </li>
+            )
+          })
+        }
+      </ul>
+    </>
+  )
+}
+
+//Create New TODO
 
 function InputTodo ({state}) {
   let [inputValue,setInputValue] = useState("")
+  console.log(inputValue);
   return (
     <>
       <input
+        value={inputValue}
         onChange={(event) => setInputValue(event.target.value)}
         placeholder="Write your new TODO"
       />
@@ -43,9 +76,10 @@ function InputTodo ({state}) {
 }
 
 function CreateTodoButton({ inputValue, state, setInputValue}) {
-  console.log(inputValue);
+  
 
   async function insertTodo() {
+    
     try {
       const { error } = await supabase
         .from("todos")
@@ -67,17 +101,19 @@ function CreateTodoButton({ inputValue, state, setInputValue}) {
 
 
 function App() {
-  let [state, setState] = useState(false);
+  const [state, setState] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+
   
   return (
     <div className='flex flex-row gap-96'>    
       <div>
         <InputTodo state={state} setState={setState}/>
       </div>
-      <div>
+      <div className='flex flex-col'>
         <TodoCounter completed={0} total={3}/>
         <TodoSearch/>
-        {/* <TodoList/> */}
+        <TodoList />
       </div>
     </div>
   );
