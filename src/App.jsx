@@ -1,4 +1,7 @@
+import { useState } from 'react'
 import './App.css'
+import { supabase } from './supabase/client'
+import { createContext } from 'react'
 
 function TodoCounter({ completed,total }) {
   return (
@@ -12,29 +15,69 @@ function TodoSearch(){
   )
 }
 
-function InputTodo () {
+// function TodoList() {
+//   async function todos() {
+//     const { data, error } = await supabase
+//     .from('todos')
+//     .select('name','done')
+//   }
+  
+
+// }
+
+function InputTodo ({state}) {
+  let [inputValue,setInputValue] = useState("")
   return (
-    <input placeholder='Create a new TODO'/>
-  )
+    <>
+      <input
+        onChange={(event) => setInputValue(event.target.value)}
+        placeholder="Write your new TODO"
+      />
+      <CreateTodoButton
+        inputValue={inputValue}
+        state={state}
+        setInputValue={setInputValue}
+      />
+    </>
+  );
 }
 
-function CreateTodoButton () {
-  return (
-    <button>Add</button>
-  )
+function CreateTodoButton({ inputValue, state, setInputValue}) {
+  console.log(inputValue);
+
+  async function insertTodo() {
+    try {
+      const { error } = await supabase
+        .from("todos")
+        .insert([{ name: inputValue, done: state }]);
+
+      if (error) {
+        console.error("Error inserting todo:", error);
+      } else {
+        setInputValue(""); // This should clear the input
+        console.log("Todo added, input cleared");
+      }
+    } catch (error) {
+      console.error("Unexpected error:", error);
+    }
+  }
+
+  return <button onClick={() => insertTodo()}>Add</button>;
 }
+
 
 function App() {
+  let [state, setState] = useState(false);
   
   return (
     <div className='flex flex-row gap-96'>    
       <div>
-        <InputTodo/>
-        <CreateTodoButton/>
+        <InputTodo state={state} setState={setState}/>
       </div>
       <div>
         <TodoCounter completed={0} total={3}/>
         <TodoSearch/>
+        {/* <TodoList/> */}
       </div>
     </div>
   );
