@@ -4,47 +4,53 @@ import './App.css'
 import { supabase } from './supabase/client'
 
 //TODO LIST
-function TodoCounter({ completed,total }) {
-  return (
-    <div>Have completed {completed} of {total} TODOs</div>
-  )
-}
-
-function TodoSearch(){
-  return (
-    <input className='border border-black' placeholder='search your TODO'/>
-  )
-}
-
-function TodoList() { 
-  const events = supabase
-    .channel("custom-all-channel")
-    .on("postgres_changes", { event: "*", schema: "public", table: "todos" })
-    .subscribe();
-
-  useEffect(() => {
-    async function getTodos() {
-      let { data, error } = await supabase.from("todos").select("*");
-      setTodos(data);
-    }
-    getTodos();
-  }, [events]);
-
+function TodoCounter( { todos } ) {
+  const completedTodos = todos.filter((todo)=> !!todo.done).length
   
-  const [todos, setTodos] = useState([]);
-      
+  return (
+    <div>Have completed {completedTodos} of {todos.length} TODOs</div>
+  )
+}
+
+function TodoSearch({ setSearchValue }){
+  return (
+    <input 
+    className='border border-black' 
+    placeholder='search your TODO'
+    onChange={(e)=>setSearchValue(e.target.value)}
+    />
+  )
+}
+
+function TodoHeader() {
+  return (
+    <div className={"flex"}>
+      <span>Date (YY/MM/DD)</span>
+      <p>Your TODO</p>
+    </div>
+  );
+}
+
+function TodoList( {currentItems} ) { 
+  
   return(
     <>
       <ul>
         {
-          todos.map(todo=>{
+          currentItems.map(todo=>{
             return(
               <li className={"flex"} key={todo.id}>
-                <span>Edit</span>
-                <p>{todo.date}</p>
+                <button>Edit</button>
+                <p>
+                  {todo.date.slice(0,4)} 
+                  / 
+                  {todo.date.slice(5,7)} 
+                  /  
+                  {todo.date.slice(8,10)} 
+                </p>
                 <p>{todo.name}</p>
-                <span>Check</span>
-                <span>Delete</span>
+                <button>Check</button>
+                <button>Delete</button>
               </li>
             )
           })
@@ -52,6 +58,33 @@ function TodoList() {
       </ul>
     </>
   )
+}
+
+//Pagination
+
+function Pagination({ setCurrentPage, itemsPerPage, rows }) {
+  let pages = [];
+  for(let i = 1; i<=Math.ceil(rows/itemsPerPage);i++) {
+    pages.push(i);
+  }
+
+    if (pages.length>1){
+    return(
+      <div>
+        {
+          pages.map(page=>{
+            return(
+              <button
+              value={page}
+              onClick={()=>setCurrentPage(page)}
+              key={page}>{page}</button>
+            )
+          })
+        }
+      </div>
+      
+    )
+  }
 }
 
 //Create New TODO
@@ -99,21 +132,64 @@ function CreateTodoButton({ inputValue, state, setInputValue}) {
   return <button onClick={() => insertTodo()}>Add</button>;
 }
 
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function App() {
+
+
   const [state, setState] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [todos, setTodos] = useState([]);
 
-  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(4);
+
+  useEffect(() => {
+    const events = supabase
+      .channel("custom-all-channel")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "todos" },
+        (payload) => {
+          // When a change happens, fetch the updated list of todos
+          getTodos();
+        }
+      )
+      .subscribe();
+    async function getTodos() {
+        let { data, error } = await supabase
+        .from("todos")
+        .select('*')
+        .ilike('name',`%${searchValue}%`);
+        setTodos(data);
+      
+
+    }
+    getTodos();
+
+    return () => {
+      supabase.removeChannel(events);
+    };
+  }, [searchValue]);
+
+  const lastPostIndex = currentPage * itemsPerPage;
+  const firstPostIndex = lastPostIndex - itemsPerPage;
+  const currentItems = todos.slice(firstPostIndex, lastPostIndex);
+
   return (
     <div className='flex flex-row gap-96'>    
       <div>
         <InputTodo state={state} setState={setState}/>
       </div>
       <div className='flex flex-col'>
-        <TodoCounter completed={0} total={3}/>
-        <TodoSearch/>
-        <TodoList />
+        <TodoCounter todos={todos}/>
+        <TodoSearch searchValue={searchValue} setSearchValue={setSearchValue}/>
+        <TodoHeader/>
+        {currentItems && <TodoList currentItems={currentItems}/>}
+        <Pagination
+          setCurrentPage={setCurrentPage}
+          itemsPerPage={itemsPerPage} 
+          rows={todos.length}
+        />
       </div>
     </div>
   );
