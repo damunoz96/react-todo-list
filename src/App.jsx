@@ -1,55 +1,59 @@
 /* eslint-disable react/prop-types */
-import { useEffect, useState } from 'react'
-import './App.css'
-import { supabase } from './supabase/client'
+import { useEffect, useState } from "react";
+import "./App.css";
+import { supabase } from "./supabase/client";
 
-//TODO LIST
-function TodoCounter( { todos } ) {
-  const completedTodos = todos.filter((todo)=> !!todo.done).length
-  
-  return (
-    <div>Have completed {completedTodos} of {todos.length} TODOs</div>
-  )
-}
+// TODO Counter
+function TodoCounter({ todos }) {
+  const completedTodos = todos.filter((todo) => !!todo.done).length;
 
-function TodoSearch({ setSearchValue }){
   return (
-    <input 
-    className='border border-black' 
-    placeholder='search your TODO'
-    onChange={(e)=>setSearchValue(e.target.value)}
-    />
-  )
-}
-
-function TodoHeader() {
-  return (
-    <div className={"flex"}>
-      <span>Date (YY/MM/DD)</span>
-      <p>Your TODO</p>
+    <div className="bg-blue-100 text-blue-700 font-semibold py-2 px-4 rounded-md mb-4">
+      You have completed {completedTodos} of {todos.length} TODOs
     </div>
   );
 }
 
-function TodoList( {currentItems} ) { 
+// TODO Search
+function TodoSearch({ setSearchValue }) {
+  return (
+    <input
+      className="border border-gray-300 p-2 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+      placeholder="Search your TODO"
+      onChange={(e) => setSearchValue(e.target.value)}
+    />
+  );
+}
 
+// Header for TODO List
+function TodoHeader() {
+  return (
+    <div className="flex justify-between py-2 border-b border-gray-300 mb-4">
+      <span className="font-semibold text-gray-600">Date (YY/MM/DD)</span>
+      <p className="font-semibold text-gray-600">Your TODO</p>
+    </div>
+  );
+}
+
+// TODO List with editing and deleting functionality
+function TodoList({ currentItems }) {
   const [editingTodo, setEditingTodo] = useState(null);
   const [editText, setEditText] = useState("");
 
-  async function deleteTodo( id ){
-    const { error } = await supabase
-      .from('todos')
-      .delete()
-      .eq('id', id);
-
+  async function deleteTodo(id) {
+    const { error } = await supabase.from("todos").delete().eq("id", id);
+    if (error) console.log(error);
   }
-  async function checkTodo( {id , done} ){
+
+  async function checkTodo({ id, done }) {
     const { data, error } = await supabase
       .from("todos")
       .update({ done: !done })
-      .eq('id', id)
+      .eq("id", id)
       .select();
+    if (error) console.log(error);
   }
+
   async function editTodo(todo) {
     const { data, error } = await supabase
       .from("todos")
@@ -61,114 +65,133 @@ function TodoList( {currentItems} ) {
   }
 
   const handleEditClick = (todo) => {
-    setEditingTodo(todo.id); // Save id of todo
-    setEditText(todo.name); // Colocamos el nombre actual en el campo de edición
+    setEditingTodo(todo.id);
+    setEditText(todo.name);
   };
 
   const handleEditSubmit = (todo) => {
-    editTodo(todo); // call edit func
+    editTodo(todo);
   };
-  
 
-  return(
-    <>
-      <ul>
-        {
-          currentItems.map(todo=>{
-            return (
-              <li className={"flex"} key={todo.id}>
-                {editingTodo === todo.id ? (
-                  <>
-                    <input
-                      type="text"
-                      value={editText}
-                      onChange={(e) => setEditText(e.target.value)}
-                    />
-                    <button onClick={() => handleEditSubmit(todo)}>Save</button>
-                    <button onClick={() => setEditingTodo(null)}>Cancel</button>
-                  </>
-                ) : (
-                  <>
-                    <button onClick={() => handleEditClick(todo)}>Edit</button>
-                    <p>
-                      {todo.date.slice(0, 4)}/{todo.date.slice(5, 7)}/
-                      {todo.date.slice(8, 10)}
-                    </p>
-                    <p>{todo.name}</p>
-                    <button onClick={() => checkTodo(todo)}>Check</button>
-                    <button onClick={() => deleteTodo(todo.id)}>Delete</button>
-                  </>
-                )}
-              </li>
-            );
-          }
-          )
-        }
-      </ul>
-    </>
-  )
+  return (
+    <ul className="space-y-4">
+      {currentItems.map((todo) => (
+        <li
+          className="flex items-center justify-between bg-white shadow rounded-md p-4"
+          key={todo.id}
+        >
+          {editingTodo === todo.id ? (
+            <>
+              <input
+                type="text"
+                className="border p-2 rounded-md flex-grow mr-2"
+                value={editText}
+                onChange={(e) => setEditText(e.target.value)}
+              />
+              <button
+                onClick={() => handleEditSubmit(todo)}
+                className="bg-green-500 text-white px-4 py-1 rounded-md hover:bg-green-600"
+              >
+                Save
+              </button>
+              <button
+                onClick={() => setEditingTodo(null)}
+                className="bg-gray-300 text-gray-700 px-4 py-1 rounded-md ml-2 hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => handleEditClick(todo)}
+                className="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 mr-4"
+              >
+                Edit
+              </button>
+              <p className="text-gray-500">
+                {todo.date.slice(0, 4)}/{todo.date.slice(5, 7)}/
+                {todo.date.slice(8, 10)}
+              </p>
+              <p className="flex-grow text-gray-800 font-semibold">
+                {todo.name}
+              </p>
+              <button
+                onClick={() => checkTodo(todo)}
+                className={`px-2 py-1 rounded ${
+                  todo.done ? "bg-green-500 text-white" : "bg-gray-200"
+                }`}
+              >
+                Check
+              </button>
+              <button
+                onClick={() => deleteTodo(todo.id)}
+                className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600"
+              >
+                Delete
+              </button>
+            </>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
 }
 
-//Pagination
-
+// Pagination for TODO list
 function Pagination({ setCurrentPage, itemsPerPage, rows }) {
   let pages = [];
-  for(let i = 1; i<=Math.ceil(rows/itemsPerPage);i++) {
+  for (let i = 1; i <= Math.ceil(rows / itemsPerPage); i++) {
     pages.push(i);
   }
 
-    if (pages.length>1){
-    return(
-      <div>
-        {
-          pages.map(page=>{
-            return(
-              <button
-              value={page}
-              onClick={()=>setCurrentPage(page)}
-              key={page}>{page}</button>
-            )
-          })
-        }
+  if (pages.length > 1) {
+    return (
+      <div className="flex space-x-2 mt-4">
+        {pages.map((page) => (
+          <button
+            value={page}
+            onClick={() => setCurrentPage(page)}
+            key={page}
+            className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300"
+          >
+            {page}
+          </button>
+        ))}
       </div>
-      
-    )
+    );
   }
 }
 
-//Create New TODO
-
-function InputTodo ({state}) {
-  let [inputValue,setInputValue] = useState("")
-  console.log(inputValue);
+// Input for creating a new TODO
+function InputTodo({ state }) {
+  const [inputValue, setInputValue] = useState("");
   return (
-    <>
+    <div className="flex space-x-2">
       <input
         value={inputValue}
         onChange={(event) => setInputValue(event.target.value)}
         placeholder="Write your new TODO"
+        className="border border-gray-300 p-2 rounded-md flex-grow focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
       <CreateTodoButton
         inputValue={inputValue}
         state={state}
         setInputValue={setInputValue}
       />
-    </>
+    </div>
   );
 }
 
-function CreateTodoButton({ inputValue, state, setInputValue}) {
-  
-
+// Button to create a new TODO
+function CreateTodoButton({ inputValue, state, setInputValue }) {
   async function insertTodo() {
-    
     try {
       const { error } = await supabase
         .from("todos")
         .insert([{ name: inputValue, done: state }]);
-
       if (!error) {
-        setInputValue(""); // This should clear the input
+        setInputValue(""); // Clear input
         console.log("Todo added, input cleared");
       }
     } catch (error) {
@@ -176,17 +199,22 @@ function CreateTodoButton({ inputValue, state, setInputValue}) {
     }
   }
 
-  return <button onClick={() => insertTodo()}>Add</button>;
+  return (
+    <button
+      onClick={() => insertTodo()}
+      className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+    >
+      Add
+    </button>
+  );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Main App Component
 function App() {
-
-
   const [state, setState] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [todos, setTodos] = useState([]);
-
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(4);
@@ -198,20 +226,17 @@ function App() {
         "postgres_changes",
         { event: "*", schema: "public", table: "todos" },
         (payload) => {
-          // When a change happens, fetch the updated list of todos
           getTodos();
         }
       )
       .subscribe();
 
     async function getTodos() {
-        let { data, error } = await supabase
+      let { data, error } = await supabase
         .from("todos")
-        .select('*')
-        .ilike('name',`%${searchValue}%`);
-        setTodos(data);
-      
-
+        .select("*")
+        .ilike("name", `%${searchValue}%`);
+      setTodos(data);
     }
     getTodos();
 
@@ -220,23 +245,27 @@ function App() {
     };
   }, [searchValue]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchValue]);
+
   const lastPostIndex = currentPage * itemsPerPage;
   const firstPostIndex = lastPostIndex - itemsPerPage;
   const currentItems = todos.slice(firstPostIndex, lastPostIndex);
 
   return (
-    <div className="flex flex-row gap-96">
-      <div>
+    <div className="flex flex-col items-center bg-gray-100 min-h-screen py-10">
+      <div className="max-w-lg w-full space-y-6">
         <InputTodo state={state} setState={setState} />
-      </div>
-      <div className="flex flex-col">
         <TodoCounter todos={todos} />
-        <TodoSearch searchValue={searchValue} setSearchValue={setSearchValue} />
+        <TodoSearch setSearchValue={setSearchValue} />
         <TodoHeader />
         {currentItems.length >= 1 ? (
           <TodoList currentItems={currentItems} />
         ) : (
-          <p>Theres no TODOS, start creating a new one!</p>
+          <p className="text-gray-500">
+            Theres no TODOs, start creating a new one!
+          </p>
         )}
         <Pagination
           setCurrentPage={setCurrentPage}
@@ -248,4 +277,4 @@ function App() {
   );
 }
 
-export default App
+export default App;
