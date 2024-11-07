@@ -32,28 +32,77 @@ function TodoHeader() {
 }
 
 function TodoList( {currentItems} ) { 
+
+  const [editingTodo, setEditingTodo] = useState(null);
+  const [editText, setEditText] = useState("");
+
+  async function deleteTodo( id ){
+    const { error } = await supabase
+      .from('todos')
+      .delete()
+      .eq('id', id);
+
+  }
+  async function checkTodo( {id , done} ){
+    const { data, error } = await supabase
+      .from("todos")
+      .update({ done: !done })
+      .eq('id', id)
+      .select();
+  }
+  async function editTodo(todo) {
+    const { data, error } = await supabase
+      .from("todos")
+      .update({ name: editText })
+      .eq("id", todo.id)
+      .select();
+    if (error) console.log(error);
+    setEditingTodo(null); // Salir del modo de edición después de actualizar
+  }
+
+  const handleEditClick = (todo) => {
+    setEditingTodo(todo.id); // Save id of todo
+    setEditText(todo.name); // Colocamos el nombre actual en el campo de edición
+  };
+
+  const handleEditSubmit = (todo) => {
+    editTodo(todo); // call edit func
+  };
   
+
   return(
     <>
       <ul>
         {
           currentItems.map(todo=>{
-            return(
+            return (
               <li className={"flex"} key={todo.id}>
-                <button>Edit</button>
-                <p>
-                  {todo.date.slice(0,4)} 
-                  / 
-                  {todo.date.slice(5,7)} 
-                  /  
-                  {todo.date.slice(8,10)} 
-                </p>
-                <p>{todo.name}</p>
-                <button>Check</button>
-                <button>Delete</button>
+                {editingTodo === todo.id ? (
+                  <>
+                    <input
+                      type="text"
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                    />
+                    <button onClick={() => handleEditSubmit(todo)}>Save</button>
+                    <button onClick={() => setEditingTodo(null)}>Cancel</button>
+                  </>
+                ) : (
+                  <>
+                    <button onClick={() => handleEditClick(todo)}>Edit</button>
+                    <p>
+                      {todo.date.slice(0, 4)}/{todo.date.slice(5, 7)}/
+                      {todo.date.slice(8, 10)}
+                    </p>
+                    <p>{todo.name}</p>
+                    <button onClick={() => checkTodo(todo)}>Check</button>
+                    <button onClick={() => deleteTodo(todo.id)}>Delete</button>
+                  </>
+                )}
               </li>
-            )
-          })
+            );
+          }
+          )
         }
       </ul>
     </>
@@ -118,9 +167,7 @@ function CreateTodoButton({ inputValue, state, setInputValue}) {
         .from("todos")
         .insert([{ name: inputValue, done: state }]);
 
-      if (error) {
-        console.error("Error inserting todo:", error);
-      } else {
+      if (!error) {
         setInputValue(""); // This should clear the input
         console.log("Todo added, input cleared");
       }
@@ -140,6 +187,7 @@ function App() {
   const [searchValue, setSearchValue] = useState("");
   const [todos, setTodos] = useState([]);
 
+
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(4);
 
@@ -155,6 +203,7 @@ function App() {
         }
       )
       .subscribe();
+
     async function getTodos() {
         let { data, error } = await supabase
         .from("todos")
@@ -176,18 +225,22 @@ function App() {
   const currentItems = todos.slice(firstPostIndex, lastPostIndex);
 
   return (
-    <div className='flex flex-row gap-96'>    
+    <div className="flex flex-row gap-96">
       <div>
-        <InputTodo state={state} setState={setState}/>
+        <InputTodo state={state} setState={setState} />
       </div>
-      <div className='flex flex-col'>
-        <TodoCounter todos={todos}/>
-        <TodoSearch searchValue={searchValue} setSearchValue={setSearchValue}/>
-        <TodoHeader/>
-        {currentItems && <TodoList currentItems={currentItems}/>}
+      <div className="flex flex-col">
+        <TodoCounter todos={todos} />
+        <TodoSearch searchValue={searchValue} setSearchValue={setSearchValue} />
+        <TodoHeader />
+        {currentItems.length >= 1 ? (
+          <TodoList currentItems={currentItems} />
+        ) : (
+          <p>Theres no TODOS, start creating a new one!</p>
+        )}
         <Pagination
           setCurrentPage={setCurrentPage}
-          itemsPerPage={itemsPerPage} 
+          itemsPerPage={itemsPerPage}
           rows={todos.length}
         />
       </div>
