@@ -28,8 +28,7 @@ function TodoSearch({ setSearchValue }) {
 // Header for TODO List
 function TodoHeader() {
   return (
-    <div className="flex justify-between py-2 border-b border-gray-300 mb-4">
-      <span className="font-semibold text-gray-600">Date (YY/MM/DD)</span>
+    <div className="flex justify-center py-2 border-b border-gray-300 mb-4">
       <p className="font-semibold text-gray-600">Your TODO</p>
     </div>
   );
@@ -64,13 +63,19 @@ function TodoList({ currentItems }) {
     setEditingTodo(null); // Salir del modo de edición después de actualizar
   }
 
-  const handleEditClick = (todo) => {
+  function handleEditClick (todo) {
     setEditingTodo(todo.id);
     setEditText(todo.name);
   };
 
-  const handleEditSubmit = (todo) => {
+  function handleEditSubmit (todo) {
     editTodo(todo);
+  };
+
+  function handleEditKeyDown (event, todo) {
+    if (event.key === "Enter") {
+      editTodo(todo); // Save changes on Enter
+    }
   };
 
   return (
@@ -86,7 +91,8 @@ function TodoList({ currentItems }) {
                 type="text"
                 className="border p-2 rounded-md flex-grow mr-2"
                 value={editText}
-                onChange={(e) => setEditText(e.target.value)}
+                onChange={(event) => setEditText(event.target.value)}
+                onKeyDown={(event) => handleEditKeyDown(event, todo)}
               />
               <button
                 onClick={() => handleEditSubmit(todo)}
@@ -139,7 +145,7 @@ function TodoList({ currentItems }) {
 }
 
 // Pagination for TODO list
-function Pagination({ setCurrentPage, itemsPerPage, rows }) {
+function Pagination({ setCurrentPage, itemsPerPage, rows, currentPage }) {
   let pages = [];
   for (let i = 1; i <= Math.ceil(rows / itemsPerPage); i++) {
     pages.push(i);
@@ -148,44 +154,31 @@ function Pagination({ setCurrentPage, itemsPerPage, rows }) {
   if (pages.length > 1) {
     return (
       <div className="flex space-x-2 mt-4">
-        {pages.map((page) => (
-          <button
-            value={page}
-            onClick={() => setCurrentPage(page)}
-            key={page}
-            className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300"
-          >
-            {page}
-          </button>
-        ))}
+        {pages.map((page) => {
+          let isActive = page === currentPage;
+          return (
+            <button
+              value={page}
+              onClick={() => setCurrentPage(page)}
+              key={page}
+              className={`px-4 py-2 rounded ${
+                isActive ? "bg-blue-500 text-white" : "bg-gray-200"
+              }`}
+            >
+              {page}
+            </button>
+          );
+        })}
       </div>
     );
   }
 }
 
 // Input for creating a new TODO
-function InputTodo({ state }) {
+function InputTodo({ setCurrentPage, state }) {
   const [inputValue, setInputValue] = useState("");
-  return (
-    <div className="flex space-x-2">
-      <input
-        value={inputValue}
-        onChange={(event) => setInputValue(event.target.value)}
-        placeholder="Write your new TODO"
-        className="border border-gray-300 p-2 rounded-md flex-grow focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-      <CreateTodoButton
-        inputValue={inputValue}
-        state={state}
-        setInputValue={setInputValue}
-      />
-    </div>
-  );
-}
-
-// Button to create a new TODO
-function CreateTodoButton({ inputValue, state, setInputValue }) {
   async function insertTodo() {
+    if (inputValue.trim() === "") return; // To avoid empty TODOS
     try {
       const { error } = await supabase
         .from("todos")
@@ -197,8 +190,33 @@ function CreateTodoButton({ inputValue, state, setInputValue }) {
     } catch (error) {
       console.error("Unexpected error:", error);
     }
+    setCurrentPage(1)
   }
+  
+  function handleKeyDown (event) {
+    if (event.key === "Enter") {
+      insertTodo(); // calls insertTodo when Enter 
+    }
+  };
 
+  return (
+    <div className="flex space-x-2">
+      <input
+        value={inputValue}
+        onKeyDown={(event)=>handleKeyDown(event)}
+        onChange={(event) => setInputValue(event.target.value)}
+        placeholder="Write your new TODO"
+        className="border border-gray-300 p-2 rounded-md flex-grow focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <CreateTodoButton
+        insertTodo={insertTodo}
+      />
+    </div>
+  );
+}
+
+// Button to create a new TODO
+function CreateTodoButton({ insertTodo }) { 
   return (
     <button
       onClick={() => insertTodo()}
@@ -235,7 +253,8 @@ function App() {
       let { data, error } = await supabase
         .from("todos")
         .select("*")
-        .ilike("name", `%${searchValue}%`);
+        .ilike("name", `%${searchValue}%`)
+        .order("id", { ascending: false });
       setTodos(data);
     }
     getTodos();
@@ -256,7 +275,7 @@ function App() {
   return (
     <div className="flex flex-col items-center bg-gray-100 min-h-screen py-10">
       <div className="max-w-lg w-full space-y-6">
-        <InputTodo state={state} setState={setState} />
+        <InputTodo setCurrentPage={setCurrentPage} state={state} />
         <TodoCounter todos={todos} />
         <TodoSearch setSearchValue={setSearchValue} />
         <TodoHeader />
@@ -271,6 +290,7 @@ function App() {
           setCurrentPage={setCurrentPage}
           itemsPerPage={itemsPerPage}
           rows={todos.length}
+          currentPage={currentPage}
         />
       </div>
     </div>
