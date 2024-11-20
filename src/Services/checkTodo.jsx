@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { supabase } from "../supabase/client";
 
 export async function checkTodo({ id, done }) {

@@ -2,19 +2,25 @@ import { useEffect, useState } from "react";
 import { supabase } from "../../supabase/client";
 import { useNavigate } from "react-router-dom";
 
-export function Login() {
+export function SignUp() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [password1, setPassword1] = useState("");
+  const [password2, setPassword2] = useState("");
   const handleSubmit = async (event) => {
     event.preventDefault();
-    try {
-      const response = await supabase.auth.signInWithOtp({
-        email: email,
-      });
-      console.log(response);
-    } catch (error) {
-      console.log("sucedio algo inesperado:", error);
+    if(password1===password2) {
+        try {
+          const response = await supabase.auth.signUp({
+            email: email,
+            password: password1,
+          });;
+          console.log(response)
+        } catch (error) {
+          console.log("sucedio algo inesperado:", error);
+        }
+    } else {
+        console.log("contraseñas no coinciden")
     }
   };
 
@@ -25,7 +31,7 @@ export function Login() {
         if (data?.user) {
           navigate("/");
         } else {
-          navigate("/login");
+          navigate("/signup");
         }
       } catch (error) {
         console.log(error);
@@ -35,7 +41,7 @@ export function Login() {
     getUserId();
 
     supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN") navigate("/");
+      if (event === "SIGNED_UP") navigate("/");
     });
   }, [navigate]);
 
@@ -53,23 +59,32 @@ export function Login() {
           placeholder="youremail@site.com"
           onChange={(event) => setEmail(event.target.value)}
         />
-        {/* <input
+        <input
           className="border-black border rounded-lg"
           type="password"
+          required
           name="password"
           placeholder="password"
-          onChange={(event) => setPassword(event.target.value)}
-        /> */}
+          onChange={(event) => setPassword1(event.target.value)}
+        />
+        <input
+          className="border-black border rounded-lg"
+          type="password"
+          required
+          name="password"
+          placeholder="repeat the password"
+          onChange={(event) => setPassword2(event.target.value)}
+        />
 
-        <button type="submit">Log in</button>
+        <button type="submit">Sign Up</button>
       </form>
       <label>
-        Do not have an account?
+        Already have an account?
         <a
-          onClick={()=>navigate("/signup")}
+          onClick={()=>navigate("/login")}
           className="cursor-pointer text-blue-500"
         >
-          Sign up
+          Log in
         </a>
       </label>
     </>

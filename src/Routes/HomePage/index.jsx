@@ -24,6 +24,17 @@ function HomePage() {
   const itemsPerPage = 4;
   const navigate = useNavigate();
 
+  const changes = supabase
+    .channel("custom-all-channel")
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "todos" },
+      (payload) => {
+        getTodos("");
+      }
+    )
+    .subscribe();
+
   async function getTodos(value) {
     const { data } = await supabase
         .from("todos")
@@ -36,7 +47,7 @@ function HomePage() {
   const searchTodo = useDebouncedCallback(getTodos, 1000);
 
   useEffect(() => {
-    getTodos("",userId)
+    getTodos("")
   }, []);
   
   console.log(todos)
@@ -65,6 +76,7 @@ function HomePage() {
 
   const handleLogOut = () => {
     supabase.auth.signOut();
+    supabase.removeAllChannels();
   };
 
   const lastPostIndex = currentPage * itemsPerPage;
@@ -74,7 +86,7 @@ function HomePage() {
   return (
     <div className="flex flex-col items-center bg-gray-100 min-h-screen py-10">
       <div className="max-w-lg w-full space-y-6">
-        <InputTodo setCurrentPage={setCurrentPage} />
+        <InputTodo setCurrentPage={setCurrentPage}/>
         <TodoCounter todos={todos} />
         <TodoSearch 
           searchTodo={searchTodo} />
