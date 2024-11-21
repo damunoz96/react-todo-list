@@ -20,7 +20,7 @@ export function SignUp() {
           console.log("sucedio algo inesperado:", error);
         }
     } else {
-        console.log("contraseñas no coinciden")
+        alert("Passwords do not match!")
     }
   };
 
@@ -40,53 +40,62 @@ export function SignUp() {
     }
     getUserId();
 
-    supabase.auth.onAuthStateChange((event, session) => {
+    supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_UP") navigate("/");
     });
   }, [navigate]);
 
   return (
-    <>
-      <form
-        onSubmit={(event) => handleSubmit(event)}
-        className="flex flex-1 min-h-full flex-col w-1/3 justify-center"
-      >
-        <input
-          className="border-black border rounded-lg"
-          type="email"
-          required
-          name="email"
-          placeholder="youremail@site.com"
-          onChange={(event) => setEmail(event.target.value)}
-        />
-        <input
-          className="border-black border rounded-lg"
-          type="password"
-          required
-          name="password"
-          placeholder="password"
-          onChange={(event) => setPassword1(event.target.value)}
-        />
-        <input
-          className="border-black border rounded-lg"
-          type="password"
-          required
-          name="password"
-          placeholder="repeat the password"
-          onChange={(event) => setPassword2(event.target.value)}
-        />
-
-        <button type="submit">Sign Up</button>
-      </form>
-      <label>
-        Already have an account?
-        <a
-          onClick={()=>navigate("/login")}
-          className="cursor-pointer text-blue-500"
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-200 flex items-center justify-center">
+      <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8">
+        <h2 className="text-2xl font-bold text-center text-gray-700 mb-6">
+          Create Your Account
+        </h2>
+        <form
+          onSubmit={(event) => handleSubmit(event)}
+          className="flex flex-col space-y-4"
         >
-          Log in
-        </a>
-      </label>
-    </>
+          <input
+            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+            type="email"
+            required
+            name="email"
+            placeholder="youremail@site.com"
+            onChange={(event) => setEmail(event.target.value)}
+          />
+          <input
+            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+            type="password"
+            required
+            name="password1"
+            placeholder="Password"
+            onChange={(event) => setPassword1(event.target.value)}
+          />
+          <input
+            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+            type="password"
+            required
+            name="password2"
+            placeholder="Confirm the password"
+            onChange={(event) => setPassword2(event.target.value)}
+          />
+          <button
+            type="submit"
+            className="bg-green-500 text-white rounded-lg px-4 py-2 font-semibold hover:bg-green-600 transition"
+          >
+            Sign Up
+          </button>
+        </form>
+        <p className="text-sm text-center text-gray-600 mt-4">
+          Already have an account?{" "}
+          <a
+            onClick={() => navigate("/login")}
+            className="text-green-500 font-medium hover:underline cursor-pointer"
+          >
+            Log in
+          </a>
+        </p>
+      </div>
+    </div>
   );
 }

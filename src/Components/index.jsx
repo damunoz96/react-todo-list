@@ -6,3 +6,5 @@ import { Pagination } from "./Pagination";
 import { InputTodo } from "./InputTodo";
 
 export { TodoSearch, TodoCounter, TodoHeader, TodoList, Pagination, InputTodo };
+export { Input } from './Input';
+export { Button } from './Button';

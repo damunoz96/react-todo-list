@@ -4,7 +4,7 @@ import { supabase } from "../supabase/client";
 import { 
   deleteTodo,
   checkTodo
- } from "../Services";
+ } from "../Services/todo.service";
 
 // TODO List with editing and deleting functionality
 
@@ -12,9 +12,8 @@ export function TodoList({ currentItems }) {
   const [editingTodo, setEditingTodo] = useState(null);
   const [editText, setEditText] = useState("");
   
-
   async function editTodo(todo) {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("todos")
       .update({ name: editText })
       .eq("id", todo.id)
