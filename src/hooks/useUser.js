@@ -17,10 +17,11 @@ export function useUser() {
   }
 
   const singup = async (email, password) => {
-    await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
     });
+    console.log({data, error})
   }
 
   return { userId, logout, isAuth, signin, singup };
