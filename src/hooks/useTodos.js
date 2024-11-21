@@ -1,4 +1,4 @@
-import { getTodos, checkTodo, deleteTodo } from "../Services/todo.service";
+import { getTodos, checkTodo, deleteTodo, insertTodo } from "../Services/todo.service";
 import { useState, useEffect } from "react";
 import { useUser } from "./useUser";
 
@@ -13,10 +13,17 @@ export function useTodos({ page, query }) {
     setCount(count);
   }
 
+  const refresh = async () => {
+    if (!userId || !page) return;
+    getTodoList(userId, page, query);
+  }
+
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || !page) return;
     getTodoList(userId, page, query);
   }, [userId, page, query]);
 
-  return { todos, count, checkTodo, deleteTodo };
+  
+
+  return { todos, count, checkTodo, deleteTodo, insertTodo, refresh };
 }

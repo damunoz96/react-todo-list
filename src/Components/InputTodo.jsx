@@ -1,51 +1,36 @@
 /* eslint-disable react/prop-types */
-import { useState } from "react";
-import { supabase } from "../supabase/client";
+import { useFormik } from "formik";
+import { Input } from "./Input";
+import { useTodos } from "../hooks/useTodos";
 
 // Input for creating a new TODO
-export function InputTodo({ setCurrentPage}) {
-  const [inputValue, setInputValue] = useState("");
-
-  async function insertTodo() {
-    console.log(inputValue);
-    if (inputValue.trim() === "") return; // To avoid empty TODOS
-    try {
-      await supabase.from("todos").insert([
-        {
-          name: inputValue,
-        },
-      ]);
-      console.log("Todo added, input cleared");
-    } catch (error) {
-      console.error("Unexpected error:", error);
+export function InputTodo({ onTodoAdd }) {
+  const { insertTodo } = useTodos({ page: 1 });
+  const { 
+    values,
+    handleChange,
+    handleBlur,
+    handleSubmit,
+  } = useFormik({
+    initialValues: {
+      todo: '',
+    },
+    onSubmit: async (data, actions) => {
+      await insertTodo(data.todo);
+      actions.resetForm();
+      onTodoAdd?.();
     }
-    setInputValue(""); // Clear input
-    setCurrentPage(1);
-  }
-
-  function handleSubmit(event) {
-    event.preventDefault()
-    // if (event.key === "Enter") {
-    //   insertTodo(); // calls insertTodo when Enter
-    //   setInputValue(""); // Clear input
-    //   console.log("Todo added, input cleared");
-    //   setCurrentPage(1);
-    // }
-    insertTodo();
-
-  }
+  });
 
   return (
     <form onSubmit={handleSubmit}>
       <div className="flex space-x-2">
-        <input
-          value={inputValue}
-          // onKeyDown={(event) =>
-          //   handleKeyDown(event, inputValue, setInputValue, setCurrentPage)
-          // }
-          onChange={(event) => setInputValue(event.target.value)}
+        <Input 
+          value={values.todo}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          name="todo"
           placeholder="Write your new TODO"
-          className="border border-gray-300 p-2 rounded-md flex-grow focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <button
           type="submit"

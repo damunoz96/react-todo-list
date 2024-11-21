@@ -21,7 +21,7 @@ function App() {
           <Route path="/todo" element={<p>Detail Page</p>}/>
         </Route>
         <Route path="/login" element={isAuth ? <Navigate to="/" replace /> : <Login/>}/>
-        <Route path="/signup" element={<SignUp/>}/>
+        <Route path="/signup" element={isAuth? <Navigate to="/" replace /> : <SignUp/>}/>
         <Route path="/*" element={<p>Not Found</p>}/>
       </Routes>
     </BrowserRouter>

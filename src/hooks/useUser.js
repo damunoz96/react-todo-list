@@ -10,12 +10,18 @@ export function useUser() {
   };
 
   const signin = async (email, password) => {
-    const response = await supabase.auth.signInWithPassword({
+    await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    console.log(response);
   }
 
-  return { userId, logout, isAuth, signin };
+  const singup = async (email, password) => {
+    await supabase.auth.signUp({
+      email,
+      password,
+    });
+  }
+
+  return { userId, logout, isAuth, signin, singup };
 }

@@ -26,5 +26,10 @@ export async function checkTodo({ id, done }) {
 
 export async function deleteTodo(id) {
   const { error } = await supabase.from("todos").delete().eq("id", id);
-  if (error) console.log(error);
+  if (error) throw error;
+}
+
+export async function insertTodo(name) {
+  const { error } = await supabase.from("todos").insert([{ name }]);
+  if (error) throw error;
 }
