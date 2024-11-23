@@ -1,19 +1,21 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import { useUser } from "../../hooks/useUser";
 import { Button, Input } from "../../Components";
 import { string, object, ref } from "yup";
+import { toast } from "sonner";
 
 const validationSchema = object({
-  email: string().email().required(),
   password: string().min(6).required(),
-  confirmPassword: string().oneOf([ref('password')], 'Passwords must be the same'),
+  confirmPassword: string().oneOf(
+    [ref("password")],
+    "Passwords must be the same"
+  ),
 });
 
-
-export function SignUp() {
+export function ResetPassword() {
   const navigate = useNavigate();
-  const { singup } = useUser();
+  const { updatepassword } = useUser();
   const {
     values,
     handleChange,
@@ -24,40 +26,28 @@ export function SignUp() {
     touched,
   } = useFormik({
     initialValues: {
-      email:'',
-      password:'',
-      confirmPassword:'',
+      password: "",
+      confirmPassword: "",
     },
     validationSchema,
-    onSubmit: async(data, actions)=>{
+    onSubmit: async (data, actions) => {
       try {
-        await singup(data.email, data.confirmPassword)
-        alert('revisa tu correo')
-        navigate('/login')
+        await updatepassword(data.confirmPassword);
+        toast.success('Password succesfully updated')
+        navigate("/login");
       } catch {
-        actions.resetForm()
+        actions.resetForm();
       }
-    }
+    },
   });
-  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-200 flex items-center justify-center">
       <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8">
         <h2 className="text-2xl font-bold text-center text-gray-700 mb-6">
-          Create Your Account
+          Enter the new password
         </h2>
         <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
-          <Input
-            value={values.email}
-            type="email"
-            required
-            name="email"
-            placeholder="youremail@site.com"
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={touched.email && errors.email}
-          />
           <Input
             value={values.password}
             type="password"
@@ -76,22 +66,11 @@ export function SignUp() {
             onBlur={handleBlur}
             error={touched.confirmPassword && errors.confirmPassword}
           />
-          <Button
-            disabled={!isValid}
-            type="submit"
-          >
-            Sign Up
+          <Button disabled={!isValid} type="submit">
+            Reset Password
           </Button>
         </form>
-        <p className="text-sm text-center text-gray-600 mt-4">
-          Already have an account?{" "}
-          <Link
-            to="/login"
-            className="text-green-500 font-medium hover:underline cursor-pointer"
-          >
-            Log in
-          </Link>
-        </p>
+        
       </div>
     </div>
   );

@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
   const isAuth = Boolean(userId);
 
   return (
-    <AuthContext.Provider value={{ isAuth, userId, loading }}>
+    <AuthContext.Provider value={{ isAuth, userId, loading, setUserId }}>
       {children}
     </AuthContext.Provider>
   );

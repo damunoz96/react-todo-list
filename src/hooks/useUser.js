@@ -24,5 +24,17 @@ export function useUser() {
     console.log({data, error})
   }
 
-  return { userId, logout, isAuth, signin, singup };
+  const passwordrecovery = async (email) => {
+    await supabase.auth.resetPasswordForEmail(email, {
+      'redirectTo': "http://localhost:5173/resetpassword",
+    });
+  }
+
+  const updatepassword = async (password) => {
+    await supabase.auth.updateUser({
+      password
+    })
+  }
+
+  return { userId, logout, isAuth, signin, singup, passwordrecovery, updatepassword };
 }

@@ -1,36 +1,35 @@
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, redirect } from "react-router-dom";
 import { useUser } from "../../hooks/useUser";
 import { useFormik } from "formik";
-import { object, string } from 'yup';
+import { object, string } from "yup";
 import { Input, Button } from "../../Components";
+import { toast } from "sonner";
 
 const validationSchema = object({
   email: string().email().required(),
-  password: string().min(6).required(),
 });
 
-export function Login() {
+export function ForgotPassword() {
   const navigate = useNavigate();
 
-  const { signin } = useUser();
-  const { 
-    values, 
-    handleChange, 
-    handleBlur, 
+  const { passwordrecovery } = useUser();
+  const {
+    values,
+    handleChange,
+    handleBlur,
     handleSubmit,
     isValid,
     errors,
-    touched
+    touched,
   } = useFormik({
     initialValues: {
-      email: '',
-      password: '',
+      email: "",
     },
     validationSchema,
     onSubmit: async (data, actions) => {
       try {
-        await signin(data.email, data.password);
-        navigate('/');
+        await passwordrecovery(data.email);
+        toast.info('Check your email to recover password')
       } catch {
         actions.resetForm();
       }
@@ -44,36 +43,26 @@ export function Login() {
           Welcome Back!
         </h2>
         <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
-          <Input 
-            type="email" placeholder="youremail@site.com" name="email"
+          <Input
+            type="email"
+            placeholder="youremail@site.com"
+            name="email"
             value={values.email}
             onChange={handleChange}
             onBlur={handleBlur}
             error={touched.email && errors.email}
           />
-          <Input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={values.password}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={touched.password && errors.password}
-          />
           <Button disabled={!isValid} type="submit">
-            Log In
+            Recover password
           </Button>
         </form>
         <p className="text-sm text-center text-gray-600 mt-4">
-          Don't have an account?{" "}
-          <Link to="/signup" className="text-blue-500 font-medium hover:underline">
-            Sign up
-          </Link>
-        </p>
-        <p className="text-sm text-center text-gray-600 mt-4">
-          Did you forgot your password?{" "}
-          <Link to="/forgotpassword" className="text-blue-500 font-medium hover:underline">
-            Click here
+          Already remember your account?{" "}
+          <Link
+            to="/login"
+            className="text-blue-500 font-medium hover:underline"
+          >
+            Log in
           </Link>
         </p>
       </div>
