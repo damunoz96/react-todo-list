@@ -16,14 +16,14 @@ import {
 // Main App Component
 function HomePage() {
   const [searchValue, setSearchValue] = useState("");
-  const [query] = useDebounce(searchValue, 1_000);
+  const [query] = useDebounce(searchValue, 500);
   const [page, setPage] = useState(1);
-  const { todos, count, refresh } = useTodos({ page, query });
+  const { todos, count, refresh } = useTodos({ page, query: query });
   const { logout } = useUser();
 
   const ITEMS_PER_PAGE = 4;
 
-  const handleAddTodo = async () => {
+  const handleChangeTodos = async () => {
     setPage(1);
     await refresh();
   }
@@ -31,7 +31,7 @@ function HomePage() {
   return (
     <div className="flex flex-col items-center bg-gray-100 min-h-screen py-10">
       <div className="max-w-lg w-full space-y-6">
-        <InputTodo onTodoAdd={handleAddTodo} />
+        <InputTodo onTodoAdd={handleChangeTodos} />
         <TodoCounter todos={todos} />
         <TodoSearch searchTodo={(value) => setSearchValue(value)} />
         <TodoHeader />

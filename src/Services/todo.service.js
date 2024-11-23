@@ -27,8 +27,8 @@ export async function checkTodo({ id, done }) {
 
 export async function deleteTodo(id) {
   const { error } = await supabase.from("todos").delete().eq("id", id);
-  toast.success('TODO succesfully deleted')
   if (error) throw error;
+  toast.success('TODO succesfully deleted');
 }
 
 export async function insertTodo(name) {

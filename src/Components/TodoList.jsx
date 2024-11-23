@@ -5,12 +5,16 @@ import {
   deleteTodo,
   checkTodo
  } from "../Services/todo.service";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { useQueryClient } from "@tanstack/react-query";
 
 // TODO List with editing and deleting functionality
 
 export function TodoList({ currentItems }) {
+  const [parent] = useAutoAnimate();
   const [editingTodo, setEditingTodo] = useState(null);
   const [editText, setEditText] = useState("");
+  const queryClient = useQueryClient();
   
   async function editTodo(todo) {
     const { error } = await supabase
@@ -27,23 +31,24 @@ export function TodoList({ currentItems }) {
     setEditText(todo.name);
   }
 
-  function handleSubmit(event,todo) {
+  async function handleSubmit(event,todo) {
     event.preventDefault()
-    editTodo(todo)
+    await editTodo(todo);
+    queryClient.invalidateQueries({ queryKey: ['todos'] });
   }
 
-  // function handleEditSubmit(todo) {
-  //   editTodo(todo);
-  // }
-
-  // function handleEditKeyDown(event, todo) {
-  //   if (event.key === "Enter") {
-  //     editTodo(todo); 
-  //   }
-  // }
+  async function handleDelete(id) {
+    await deleteTodo(id);
+    queryClient.invalidateQueries({ queryKey: ['todos'] });
+  }
+  
+  async function handleCheck(todo) {
+    await checkTodo(todo);
+    queryClient.invalidateQueries({ queryKey: ['todos'] });
+  }
 
   return (
-    <ul className="space-y-4">
+    <ul ref={parent} className="space-y-4">
       {currentItems.map((todo) => (
         <li
           className="flex items-center justify-between bg-white shadow rounded-md p-4"
@@ -90,7 +95,7 @@ export function TodoList({ currentItems }) {
                 {todo.name}
               </p>
               <button
-                onClick={() => checkTodo(todo)}
+                onClick={() => handleCheck(todo)}
                 className={`px-2 py-1 rounded ${
                   todo.done ? "bg-green-500 text-white" : "bg-gray-200"
                 }`}
@@ -98,7 +103,7 @@ export function TodoList({ currentItems }) {
                 Check
               </button>
               <button
-                onClick={() => deleteTodo(todo.id)}
+                onClick={() => handleDelete(todo.id)}
                 className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600"
               >
                 Delete

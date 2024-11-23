@@ -26,7 +26,7 @@ export function useUser() {
 
   const passwordrecovery = async (email) => {
     await supabase.auth.resetPasswordForEmail(email, {
-      'redirectTo': "http://localhost:5173/resetpassword",
+      'redirectTo': `${location.hostname}/resetpassword`,
     });
   }
 

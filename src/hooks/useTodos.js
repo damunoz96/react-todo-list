@@ -1,29 +1,29 @@
 import { getTodos, checkTodo, deleteTodo, insertTodo } from "../Services/todo.service";
-import { useState, useEffect } from "react";
 import { useUser } from "./useUser";
+import { useQuery } from "@tanstack/react-query";
 
 export function useTodos({ page, query }) {
-  const [todos, setTodos] = useState([]);
-  const [count, setCount] = useState(0);
   const { userId } = useUser();
-
-  const getTodoList = async (userId, page, query) => {
-    const { data, count } = await getTodos(userId, page, query);
-    setTodos(data);
-    setCount(count);
-  }
+  const q = useQuery({
+    queryKey: ['todos', userId, page, query],
+    queryFn: async ({ queryKey }) => {
+      const { 1: userId, 2: page, 3: query } = queryKey;
+      const { data, count } = await getTodos(userId, page, query);
+      return { list: data, count: count };
+    },
+    enabled: Boolean(userId),
+  });
 
   const refresh = async () => {
-    if (!userId || !page) return;
-    getTodoList(userId, page, query);
+    q.refetch();
   }
 
-  useEffect(() => {
-    if (!userId || !page) return;
-    getTodoList(userId, page, query);
-  }, [userId, page, query]);
-
-  
-
-  return { todos, count, checkTodo, deleteTodo, insertTodo, refresh };
+  return { 
+    todos: q.data?.list ?? [], 
+    count: q.data?.count ?? 0, 
+    checkTodo, 
+    deleteTodo, 
+    insertTodo, 
+    refresh 
+  };
 }

@@ -5,7 +5,7 @@ import { useTodos } from "../hooks/useTodos";
 
 // Input for creating a new TODO
 export function InputTodo({ onTodoAdd }) {
-  const { insertTodo } = useTodos({ page: 1 });
+  const { insertTodo } = useTodos({ page: 1, query: '' });
   const { 
     values,
     handleChange,
