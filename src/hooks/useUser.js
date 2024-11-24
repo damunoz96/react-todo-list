@@ -1,8 +1,9 @@
+import { toast } from "sonner";
 import { useAuth } from "../context/auth-context";
 import { supabase } from "../supabase/client";
 
 export function useUser() {
-  const { isAuth, userId } = useAuth();
+  const { isAuth, userId, username } = useAuth();
 
   const logout = () => {
     supabase.auth.signOut();
@@ -10,22 +11,30 @@ export function useUser() {
   };
 
   const signin = async (email, password) => {
-    await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+    if (error) toast.error("Incorrect email or password");
+    toast.success('Successfully logged')
   }
 
-  const singup = async (email, password) => {
+  const singup = async (email, password, displayname) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data:{
+          display_name: displayname,
+        },
+      },
     });
     console.log({data, error})
   }
 
   const passwordrecovery = async (email) => {
     await supabase.auth.resetPasswordForEmail(email, {
+      // eslint-disable-next-line no-undef
       'redirectTo': `${location.hostname}/resetpassword`,
     });
   }
@@ -36,5 +45,5 @@ export function useUser() {
     })
   }
 
-  return { userId, logout, isAuth, signin, singup, passwordrecovery, updatepassword };
+  return { userId, username, logout, isAuth, signin, singup, passwordrecovery, updatepassword };
 }

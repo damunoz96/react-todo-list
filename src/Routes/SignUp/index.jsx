@@ -6,6 +6,7 @@ import { string, object, ref } from "yup";
 import { toast } from "sonner";
 
 const validationSchema = object({
+  displayname: string().required().min(6),
   email: string().email().required(),
   password: string().min(6).required(),
   confirmPassword: string().oneOf([ref('password')], 'Passwords must be the same'),
@@ -25,6 +26,7 @@ export function SignUp() {
     touched,
   } = useFormik({
     initialValues: {
+      displayname:'',
       email:'',
       password:'',
       confirmPassword:'',
@@ -32,7 +34,7 @@ export function SignUp() {
     validationSchema,
     onSubmit: async(data, actions)=>{
       try {
-        await singup(data.email, data.confirmPassword)
+        await singup(data.email, data.confirmPassword, data.displayname)
         toast.success('Sign up successfully')
         navigate('/login')
       } catch {
@@ -50,9 +52,17 @@ export function SignUp() {
         </h2>
         <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
           <Input
+            value={values.displayname}
+            type="input"
+            name="displayname"
+            placeholder="Display name"
+            onChange={handleChange}
+            onBlur={handleBlur}
+            error={touched.displayname && errors.displayname}
+          />
+          <Input
             value={values.email}
             type="email"
-            required
             name="email"
             placeholder="youremail@site.com"
             onChange={handleChange}
