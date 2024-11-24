@@ -3,13 +3,12 @@ import { supabase } from "../supabase/client";
 
 const ITEMS_PER_PAGE = 4;
 
-export async function getTodos(userId, page = 1, query = '') {
+export async function getTodos(page = 1, query = '') {
   const init = (page - 1) * ITEMS_PER_PAGE;
   const end = (init + ITEMS_PER_PAGE) - 1;
   const { data, count, error } = await supabase
     .from("todos")
     .select("*", { count: 'exact' })
-    .eq("UUID", userId)
     .ilike("name", `%${query}%`)
     .order("date", { ascending: false })
     .range(init, end);

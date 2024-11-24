@@ -2,6 +2,7 @@
 import { useFormik } from "formik";
 import { Input } from "./Input";
 import { useTodos } from "../hooks/useTodos";
+import { TbPlus } from 'react-icons/tb';
 
 // Input for creating a new TODO
 export function InputTodo({ onTodoAdd }) {
@@ -23,22 +24,19 @@ export function InputTodo({ onTodoAdd }) {
   });
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="flex space-x-2">
-        <Input 
+    <form className="w-full flex gap-2" onSubmit={handleSubmit}>
+      <div className="flex-1">
+        <Input
           value={values.todo}
           onChange={handleChange}
           onBlur={handleBlur}
           name="todo"
           placeholder="Write your new TODO"
         />
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-        >
-          Add
-        </button>
       </div>
+      <button type="submit" className="bg-blue-500 text-white h-[42px] w-[42px] flex justify-center items-center rounded-md hover:bg-blue-600">
+        <TbPlus size={22} strokeWidth={3} />
+      </button>
     </form>
   );
 }

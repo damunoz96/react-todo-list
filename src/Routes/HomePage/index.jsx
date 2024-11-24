@@ -5,36 +5,38 @@ import { useDebounce } from "use-debounce";
 import { useTodos } from "../../hooks/useTodos";
 import { useUser } from "../../hooks/useUser";
 import {
-  TodoCounter,
   TodoSearch,
   TodoHeader,
   TodoList,
   Pagination,
   InputTodo,
 } from "../../Components";
+import { ProgressBar } from "../../Components/ProgressBar";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Main App Component
 function HomePage() {
   const [searchValue, setSearchValue] = useState("");
   const [query] = useDebounce(searchValue, 500);
   const [page, setPage] = useState(1);
-  const { todos, count, refresh } = useTodos({ page, query: query });
+  const { todos, count } = useTodos({ page, query: query });
   const { logout } = useUser();
+  const queryClient = useQueryClient();
 
   const ITEMS_PER_PAGE = 4;
 
   const handleChangeTodos = async () => {
     setPage(1);
-    await refresh();
+    queryClient.invalidateQueries({ queryKey: ['todos'] });
   }
 
   return (
     <div className="flex flex-col items-center bg-gray-100 min-h-screen py-10">
       <div className="max-w-lg w-full space-y-6">
         <InputTodo onTodoAdd={handleChangeTodos} />
-        <TodoCounter todos={todos} />
         <TodoSearch searchTodo={(value) => setSearchValue(value)} />
         <TodoHeader />
+        <ProgressBar />
         <TodoList currentItems={todos} />
         <Pagination
           setCurrentPage={setPage}
