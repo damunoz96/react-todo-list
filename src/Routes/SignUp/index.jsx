@@ -1,20 +1,18 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useFormik } from "formik";
 import { useUser } from "../../hooks/useUser";
 import { Button, Input } from "../../Components";
 import { string, object, ref } from "yup";
-import { toast } from "sonner";
 
 const validationSchema = object({
   displayname: string().required().min(6),
   email: string().email().required(),
   password: string().min(6).required(),
-  confirmPassword: string().oneOf([ref('password')], 'Passwords must be the same'),
+  confirmPassword: string().oneOf([ref('password')], 'Passwords must be the same').required(),
 });
 
 
 export function SignUp() {
-  const navigate = useNavigate();
   const { singup } = useUser();
   const {
     values,
@@ -35,8 +33,6 @@ export function SignUp() {
     onSubmit: async(data, actions)=>{
       try {
         await singup(data.email, data.confirmPassword, data.displayname)
-        toast.success('Sign up successfully')
-        navigate('/login')
       } catch {
         actions.resetForm()
       }

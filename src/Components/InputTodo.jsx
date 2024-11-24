@@ -3,6 +3,11 @@ import { useFormik } from "formik";
 import { Input } from "./Input";
 import { useTodos } from "../hooks/useTodos";
 import { TbPlus } from 'react-icons/tb';
+import { object, string } from "yup";
+
+const validationSchema = object({
+  todo: string().required(),
+});
 
 // Input for creating a new TODO
 export function InputTodo({ onTodoAdd }) {
@@ -20,7 +25,8 @@ export function InputTodo({ onTodoAdd }) {
       await insertTodo(data.todo);
       actions.resetForm();
       onTodoAdd?.();
-    }
+    },
+    validationSchema
   });
 
   return (

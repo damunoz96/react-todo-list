@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 // Header for TODO List
 export function TodoHeader({ displayname }) {
   return (

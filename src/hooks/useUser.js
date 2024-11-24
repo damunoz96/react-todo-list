@@ -1,9 +1,11 @@
 import { toast } from "sonner";
 import { useAuth } from "../context/auth-context";
 import { supabase } from "../supabase/client";
+import { useNavigate } from "react-router-dom";
 
 export function useUser() {
   const { isAuth, userId, username } = useAuth();
+  const navigate = useNavigate();
 
   const logout = () => {
     supabase.auth.signOut();
@@ -15,12 +17,14 @@ export function useUser() {
       email,
       password,
     });
-    if (error) toast.error("Incorrect email or password");
-    toast.success('Successfully logged')
+    if (error) {toast.error("Incorrect email or password")} else {
+      toast.success('Successfully logged')
+    } ;
+    
   }
 
   const singup = async (email, password, displayname) => {
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -29,7 +33,10 @@ export function useUser() {
         },
       },
     });
-    console.log({data, error})
+    if (error) { toast.error('An error have ocurred')} else {
+      toast.success("Sign up successfully");
+      navigate('/login');
+    }
   }
 
   const passwordrecovery = async (email) => {

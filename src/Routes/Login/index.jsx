@@ -3,7 +3,6 @@ import { useUser } from "../../hooks/useUser";
 import { useFormik } from "formik";
 import { object, string } from 'yup';
 import { Input, Button } from "../../Components";
-import { toast } from "sonner";
 
 const validationSchema = object({
   email: string().email().required(),
@@ -30,7 +29,7 @@ export function Login() {
     validationSchema,
     onSubmit: async (data, actions) => {
       try {
-        await signin(data.email, data.password);
+        await signin(data.email, data.password);        
         navigate('/');
       } catch {
         actions.resetForm();        
