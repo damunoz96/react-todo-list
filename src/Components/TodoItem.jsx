@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { TbTrash, TbPencil, TbCheck } from "react-icons/tb";
 import { deleteTodo, checkTodo } from "../Services/todo.service";
@@ -9,15 +9,49 @@ export function TodoItem({ todo }) {
   const [editOpen, setEditOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  async function handleDelete(id) {
-    await deleteTodo(id);
-    queryClient.invalidateQueries({ queryKey: ['todos'] });
-  }
-  
-  async function handleCheck(todo) {
-    await checkTodo(todo);
-    queryClient.invalidateQueries({ queryKey: ['todos'] });
-  }
+  const mutation = useMutation({
+    mutationFn: (todo) => checkTodo(todo),
+    onMutate: async (newTodo) => {
+      await queryClient.cancelQueries({ queryKey: ['todos'] });
+      const previousTodos = queryClient.getQueriesData({ queryKey: ['todos', 'all'] });
+      const previousDone = queryClient.getQueryData(['todos', 'done']);
+      
+      queryClient.setQueryData(['todos', 'done'], (old) => {
+        const futureDone = !newTodo.done;
+        if (futureDone) return old + 1;
+        return old - 1;
+      });
+
+      previousTodos.forEach(([key]) => {
+        queryClient.setQueryData(key, (old) => {
+          const idx = old.list.findIndex((t) => t.id === newTodo.id);
+          if (idx === -1) return old;
+          const list = [...old.list];
+          list[idx] = { ...list[idx], done: !newTodo.done };
+          return { ...old, list };
+        });
+      });
+
+      return { previousTodos, previousDone };
+    },
+    onError: (_err, _newTodo, context) => {
+      queryClient.setQueryData(['todos', 'done'], context.previousDone);
+      const prev = context.previousTodos; 
+      prev.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (todo) => deleteTodo(todo.id),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
+    },
+  });
   
   const date = useMemo(() => {
     const formater = new Intl.DateTimeFormat('es-CO');
@@ -32,11 +66,11 @@ export function TodoItem({ todo }) {
           <div>
             {
               todo.done ? (
-                <button onClick={() => handleCheck(todo)} className="w-6 h-6 rounded-full border border-green-400 bg-green-500 text-green-50 flex items-center justify-center">
+                <button onClick={() => mutation.mutate(todo)} className="w-6 h-6 rounded-full border border-green-400 bg-green-500 text-green-50 flex items-center justify-center">
                   <TbCheck size={18} />
                 </button>
               ) : (
-                <button onClick={() => handleCheck(todo)} className="w-6 h-6 rounded-full border border-gray-400"></button>
+                <button onClick={() => mutation.mutate(todo)} className="w-6 h-6 rounded-full border border-gray-400"></button>
               )
             }
           </div>
@@ -52,7 +86,7 @@ export function TodoItem({ todo }) {
                 </button>
               )
             }
-            <button onClick={() => handleDelete(todo.id)} className="w-9 h-9 flex justify-center items-center rounded-md text-gray-400 hover:bg-red-100 hover:text-red-700">
+            <button onClick={() => deleteMutation.mutate(todo)} className="w-9 h-9 flex justify-center items-center rounded-md text-gray-400 hover:bg-red-100 hover:text-red-700">
               <TbTrash size={22} />
             </button>
           </div>

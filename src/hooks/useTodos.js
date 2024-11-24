@@ -16,6 +16,8 @@ export function useTodos({ page, query }) {
   }
 
   return { 
+    loading: q.isLoading,
+    isFetching: q.isFetching,
     todos: q.data?.list ?? [], 
     count: q.data?.count ?? 0, 
     checkTodo, 
