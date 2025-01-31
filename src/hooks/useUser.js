@@ -42,7 +42,7 @@ export function useUser() {
   const passwordrecovery = async (email) => {
     await supabase.auth.resetPasswordForEmail(email, {
       // eslint-disable-next-line no-undef
-      'redirectTo': `${location.hostname}/resetpassword`,
+      redirectTo: `https://todolistddmm.netlify.app/resetpassword`,
     });
   }
 

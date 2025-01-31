@@ -33,7 +33,7 @@ function HomePage() {
 
   useEffect(() => {
     if (isFetching) return;
-    if (todos.length === 0 && page > 1) setPage((p) => {p - 1});
+    if (todos.length === 0 && page > 1) setPage((p) => p - 1);
   }, [todos, isFetching]);
 
   return (

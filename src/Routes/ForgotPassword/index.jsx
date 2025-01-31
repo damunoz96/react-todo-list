@@ -39,9 +39,9 @@ export function ForgotPassword() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200 flex items-center justify-center">
       <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8">
-        <h2 className="text-2xl font-bold text-center text-gray-700 mb-6">
+        {/* <h2 className="text-2xl font-bold text-center text-gray-700 mb-6">
           Welcome Back!
-        </h2>
+        </h2> */}
         <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
           <Input
             type="email"
