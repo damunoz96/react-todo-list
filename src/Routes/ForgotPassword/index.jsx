@@ -1,4 +1,4 @@
-import { useNavigate, Link, redirect } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useUser } from "../../hooks/useUser";
 import { useFormik } from "formik";
 import { object, string } from "yup";
@@ -10,7 +10,6 @@ const validationSchema = object({
 });
 
 export function ForgotPassword() {
-  const navigate = useNavigate();
 
   const { passwordrecovery } = useUser();
   const {
@@ -30,8 +29,10 @@ export function ForgotPassword() {
       try {
         await passwordrecovery(data.email);
         toast.info('Check your email to recover password')
-      } catch {
+      } catch (error){
         actions.resetForm();
+        toast.error(error.message);
+
       }
     },
   });

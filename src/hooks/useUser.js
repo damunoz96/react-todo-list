@@ -41,7 +41,7 @@ export function useUser() {
   
   const passwordrecovery = async (email) => {
     // eslint-disable-next-line no-undef
-    const redirectTo = `${windows.location.origin}/resetpassword`;
+    const redirectTo = `${location.origin}/resetpassword`;
     console.log(redirectTo);
     await supabase.auth.resetPasswordForEmail(email, {
       redirectTo,
