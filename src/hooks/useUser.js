@@ -38,11 +38,13 @@ export function useUser() {
       navigate('/login');
     }
   }
-
+  
   const passwordrecovery = async (email) => {
+    // eslint-disable-next-line no-undef
+    const redirectTo = `${windows.location.origin}/resetpassword`;
+    console.log(redirectTo);
     await supabase.auth.resetPasswordForEmail(email, {
-      // eslint-disable-next-line no-undef
-      'RedirectTo': `${location.origin}/resetpassword`,
+      redirectTo,
     });
   }
 
