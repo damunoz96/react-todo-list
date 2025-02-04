@@ -7,7 +7,6 @@ export async function getTodos(page = 1, query = '') {
   page=Math.max(page,1);
   const init =(page - 1) * ITEMS_PER_PAGE;
   const end = (init + ITEMS_PER_PAGE) - 1;
-  console.log({init, end})
   const { data, count, error } = await supabase
     .from("todos")
     .select("*", { count: 'exact' })
@@ -32,8 +31,8 @@ export async function deleteTodo(id) {
   toast.success('TODO succesfully deleted');
 }
 
-export async function insertTodo(name) {
-  const { error } = await supabase.from("todos").insert([{ name }]);
+export async function insertTodo(name, completion) {
+  const { error } = await supabase.from("todos").insert([{ name , completion }]);
   toast.success("TODO added");
-  if (error) toast.error('An error ocurred interting your TODO');
+  if (error) toast.error('An error ocurred inserting your TODO');
 }

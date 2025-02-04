@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { useTodos } from "../../hooks/useTodos";
@@ -38,14 +37,14 @@ function HomePage() {
 
   return (
     <>
-      <header className="bg-white flex flex-1 gap-48 justify-center items-center border-b-2 h-16">
+      <header className="bg-white flex flex-1 items-center border-b-2 h-16 max-w-lg w-full mx-auto justify-between px-2">
         <TodoHeader displayname={username} />
-        <div className="flex items-center gap-1">
-          <TbLogout/>
-          <button  className="text-sm" onClick={logout}>Log out</button>
+        <div className=" flex items-center gap-1">
+          <TbLogout className="text-red-600"/>
+          <button  className="text-sm text-red-600" onClick={logout}>Log out</button>
         </div>
       </header>
-      <div className="flex flex-col items-center bg-gray-100 min-h-screen py-10">
+      <div className="flex flex-col items-center min-h-screen py-10">
         <div className="max-w-lg w-full space-y-6">
           <InputTodo onTodoAdd={handleChangeTodos} />
           <TodoSearch searchTodo={(value) => setSearchValue(value)} />

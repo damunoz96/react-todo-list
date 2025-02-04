@@ -59,6 +59,12 @@ export function TodoItem({ todo }) {
     return formater.format(d);
   }, [todo.date]);
 
+  const comp = useMemo(() => {
+    const formater = new Intl.DateTimeFormat('es-CO');
+    const c = new Date(todo.completion)
+    return formater.format(c);
+  }, [todo.completion]);
+
   return (
     <>
       <li key={todo.id}>
@@ -76,7 +82,7 @@ export function TodoItem({ todo }) {
           </div>
           <div className="flex-1">
             <p className={`text-gray-800 font-medium ${todo.done ? 'line-through' : ''}`}>{todo.name}</p>
-            <p className="text-gray-500">{date}</p>
+            <p className="text-gray-500">{date} to {comp}</p>
           </div>
           <div className="flex gap-2">
             {
